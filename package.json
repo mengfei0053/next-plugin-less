@@ -1,0 +1,65 @@
+{
+  "name": "next-plugin-less",
+  "version": "0.0.0-development",
+  "main": "dist/index.js",
+  "sideEffect": false,
+  "author": "mengfei0053@live.com",
+  "description": "Use Antd Or Library like Antd (with Less) with Next.js. ",
+  "license": "MIT",
+  "homepage": "https://github.com/mengfei0053/next-plugin-less.git",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mengfei0053/next-plugin-less.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mengfei0053/next-plugin-less/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "scripts": {
+    "release": "echo test",
+    "commit": "commit",
+    "semantic-release": "semantic-release"
+  },
+  "keywords": [
+    "next",
+    "nextjs",
+    "next.js",
+    "less",
+    "less plugin",
+    "antd",
+    "ant design",
+    "antd plugin",
+    "plugin",
+    "css module",
+    "next plugin"
+  ],
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^4.28.2",
+    "@typescript-eslint/parser": "^4.28.2",
+    "eslint": "^7.30.0",
+    "eslint-config-airbnb": "^18.2.1",
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-plugin-import": "^2.23.4",
+    "husky": "^7.0.0",
+    "lint-staged": "^11.0.0",
+    "typescript": "^4.3.5",
+    "@semantic-release/changelog": "^5.0.1",
+    "@semantic-release/commit-analyzer": "^8.0.1",
+    "@semantic-release/git": "^9.0.0",
+    "@semantic-release/npm": "^7.1.3",
+    "@semantic-release/release-notes-generator": "^9.0.3",
+    "@commitlint/cli": "^12.1.4",
+    "@commitlint/config-conventional": "^12.1.4",
+    "@commitlint/prompt-cli": "^12.1.4",
+    "semantic-release": "^17.4.4"
+  },
+  "dependencies": {
+    "clone": "^2.1.2",
+    "less": "^4.1.1",
+    "less-loader": "^7",
+    "null-loader": "^4.0.1"
+  }
+}
