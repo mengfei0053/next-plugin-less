@@ -286,7 +286,7 @@ export default function overrideWebpackConfig ({ webpackConfig, nextConfig, plug
   //
   // ---- excludeLibsStyleInServer (ONLY Next.js) ----
   if (isNextJs) {
-    webpackConfig = excludeLibsStyleInServer(webpackConfig, nextConfig);
+    webpackConfig = excludeLibsStyleInServer(webpackConfig, nextConfig, pluginOptions.libsStyleRegExp);
 
     if (typeof pluginOptions.webpack === 'function') {
       return pluginOptions.webpack(webpackConfig, nextConfig);
