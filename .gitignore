@@ -64,4 +64,3 @@ logs
 .vercel
 /.now
 /.vercel
-yarn.lock
