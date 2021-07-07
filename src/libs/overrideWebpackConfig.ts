@@ -1,24 +1,8 @@
-import type { Configuration } from 'webpack';
 import clone from 'clone';
 import fs from 'fs';
 import path from 'path';
-
-/**
- * checkIsNextJs
- *
- * @param webpackConfig
- * @returns {boolean}
- */
-function checkIsNextJs (webpackConfig:Configuration) {
-  return Boolean(
-    webpackConfig &&
-      webpackConfig.resolveLoader &&
-      webpackConfig.resolveLoader.alias &&
-      (webpackConfig.resolveLoader.alias as {
-        [index: string]: string | false | string[]
-      })['next-babel-loader']
-  );
-}
+import checkIsNextJs from './checkIsNextJs';
+import handleAntdInServer from './handleAntdInServer';
 
 /**
  * overrideWebpackConfig
@@ -28,7 +12,7 @@ function checkIsNextJs (webpackConfig:Configuration) {
  * @param pluginOptions
  * @returns {*}
  */
-export function overrideWebpackConfig ({ webpackConfig, nextConfig, pluginOptions }:any) {
+export default function overrideWebpackConfig ({ webpackConfig, nextConfig, pluginOptions }:any) {
   const isNextJs = checkIsNextJs(webpackConfig);
 
   if (isNextJs && !nextConfig.defaultLoaders) {
@@ -54,9 +38,9 @@ export function overrideWebpackConfig ({ webpackConfig, nextConfig, pluginOption
 
   if (
     pluginOptions &&
-    pluginOptions.cssLoaderOptions &&
-    pluginOptions.cssLoaderOptions.modules &&
-    pluginOptions.cssLoaderOptions.modules.localIdentName
+      pluginOptions.cssLoaderOptions &&
+      pluginOptions.cssLoaderOptions.modules &&
+      pluginOptions.cssLoaderOptions.modules.localIdentName
   ) {
     localIdentName = pluginOptions.cssLoaderOptions.modules.localIdentName;
   }
@@ -83,7 +67,7 @@ export function overrideWebpackConfig ({ webpackConfig, nextConfig, pluginOption
 
   if (
     pluginOptions.cssLoaderOptions &&
-    pluginOptions.cssLoaderOptions.modules
+      pluginOptions.cssLoaderOptions.modules
   ) {
     cssLoaderInCssModule.options.modules = {
       ...cssLoaderInCssModule.options.modules,
@@ -131,8 +115,8 @@ export function overrideWebpackConfig ({ webpackConfig, nextConfig, pluginOption
   const fileModuleIndex = rule.oneOf.findIndex((item:any) => {
     if (
       item.use &&
-      item.use.loader &&
-      item.use.loader.includes('/file-loader/')
+        item.use.loader &&
+        item.use.loader.includes('/file-loader/')
     ) {
       return item;
     }
@@ -147,14 +131,14 @@ export function overrideWebpackConfig ({ webpackConfig, nextConfig, pluginOption
   }
 
   /*
-  |--------------------------------------------------------------------------
-  | modifyVars (Hot Reload is **NOT Supported**, NEED restart webpack)
-  |--------------------------------------------------------------------------
-  |
-  | CONSTANTS --> e.g. `@THEME--DARK: 'theme-dark';`
-  |                    `:global(.@{THEME--DARK}) { color: red }`
-  |
-  */
+    |--------------------------------------------------------------------------
+    | modifyVars (Hot Reload is **NOT Supported**, NEED restart webpack)
+    |--------------------------------------------------------------------------
+    |
+    | CONSTANTS --> e.g. `@THEME--DARK: 'theme-dark';`
+    |                    `:global(.@{THEME--DARK}) { color: red }`
+    |
+    */
   let modifyVars;
 
   if (pluginOptions.modifyVars) {
@@ -166,14 +150,14 @@ export function overrideWebpackConfig ({ webpackConfig, nextConfig, pluginOption
   }
 
   /*
-  |--------------------------------------------------------------------------
-  | lessVarsFilePath (Hot Reload is **Supported**, can overwrite `antd` vars)
-  |--------------------------------------------------------------------------
-  |
-  | variables file --> e.g. `./styles/variables.less`
-  |                         `@primary-color: #04f;`
-  |
-  */
+    |--------------------------------------------------------------------------
+    | lessVarsFilePath (Hot Reload is **Supported**, can overwrite `antd` vars)
+    |--------------------------------------------------------------------------
+    |
+    | variables file --> e.g. `./styles/variables.less`
+    |                         `@primary-color: #04f;`
+    |
+    */
   if (pluginOptions.lessVarsFilePath) {
     lessModuleOptions.additionalData = (content:any) => {
       const lessVarsFileResolvePath = path.resolve(
@@ -220,9 +204,9 @@ export function overrideWebpackConfig ({ webpackConfig, nextConfig, pluginOption
 
   if (
     cssLoaderClone &&
-    cssLoaderClone.options &&
-    cssLoaderClone.options.modules &&
-    cssLoaderClone.options.modules.getLocalIdent
+      cssLoaderClone.options &&
+      cssLoaderClone.options.modules &&
+      cssLoaderClone.options.modules.getLocalIdent
   ) {
     // make the custom `localIdentName` work
     delete cssLoaderClone.options.modules.getLocalIdent;
@@ -288,66 +272,6 @@ export function overrideWebpackConfig ({ webpackConfig, nextConfig, pluginOption
 
   // console.log('🟣  webpackConfig.module.rules');
   // console.dir(webpackConfig.module.rules, { depth: null });
-
-  return webpackConfig;
-}
-
-/**
- * isWebpack5
- *
- * @param nextConfig
- * @returns {boolean}
- */
-function isWebpack5 (nextConfig:any) {
-  return (
-    typeof nextConfig.webpack.version === 'string' &&
-    nextConfig.webpack.version.startsWith('5')
-  );
-}
-
-/**
- * handleAntdInServer
- *
- * @param webpackConfig
- * @param nextConfig
- * @returns {*}
- */
-export function handleAntdInServer (webpackConfig:Configuration, nextConfig:any) {
-  if (!nextConfig.isServer) return webpackConfig;
-
-  const ANTD_STYLE_REGX = /(antd\/.*?\/style).*(?<![.]js)$/;
-  const exts = [...webpackConfig.externals as any];
-
-  webpackConfig.externals = isWebpack5(nextConfig)
-    ? [
-      // ctx and cb are both webpack5's params
-      // ctx eqauls { context, request, contextInfo, getResolve }
-      // https://webpack.js.org/configuration/externals/#function
-        (ctx, cb) => {
-          if (ctx.request && ctx.request.match(ANTD_STYLE_REGX)) return cb();
-
-          // next's params are different when webpack5 enable
-          // https://github.com/vercel/next.js/blob/0425763ed6a90f4ff99ab2ff37821da61d895e09/packages/next/build/webpack-config.ts#L770
-          if (typeof exts[0] === 'function') return exts[0](ctx, cb);
-          return cb();
-        },
-        ...(typeof exts[0] === 'function' ? [] : exts)
-      ]
-    : [
-      // webpack4
-        (ctx:any, req:any, cb:any) => {
-          if (req.match(ANTD_STYLE_REGX)) return cb();
-
-          if (typeof exts[0] === 'function') return exts[0](ctx, req, cb);
-          return cb();
-        },
-        ...(typeof exts[0] === 'function' ? [] : exts)
-      ];
-
-  ((webpackConfig.module as any).rules as any[]).unshift({
-    test: ANTD_STYLE_REGX,
-    use: 'null-loader'
-  });
 
   return webpackConfig;
 }

@@ -1,8 +1,10 @@
+import { NextConfig } from 'next/dist/next-server/server/config-shared';
 import type { Configuration } from 'webpack';
-import { overrideWebpackConfig } from './overrideWebpackConfig';
+import overrideWebpackConfig from './libs/overrideWebpackConfig';
+import { WithLessOptions } from './type';
 
-module.exports = (
-  pluginOptions = {
+const withLess = (
+  pluginOptions: WithLessOptions = {
     // optional
     modifyVars: undefined,
     // optional
@@ -23,7 +25,7 @@ module.exports = (
   }
 ) => ({
   ...pluginOptions,
-  webpack (webpackConfig: Configuration, nextConfig:any) {
+  webpack (webpackConfig: Configuration, nextConfig: NextConfig) {
     return overrideWebpackConfig({
       webpackConfig,
       nextConfig,
@@ -31,3 +33,5 @@ module.exports = (
     });
   }
 });
+
+export = withLess;

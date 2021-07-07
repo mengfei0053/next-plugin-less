@@ -1,0 +1,40 @@
+
+export type CssModuleTypes = 'local' | 'global' | 'pure';
+
+export interface WithLessOptions {
+    /**
+     * { '@primary-color': '#04f' }
+     */
+    modifyVars?: {
+        [K: string]: string | number;
+    };
+    lessVarsFilePath?: string;
+    lessVarsFilePathAppendToEndOfContent?: boolean;
+    cssLoaderOptions?: Partial<{
+        esModule: boolean;
+        import: boolean | ((url: string, media: string, resourcePath: string) => boolean);
+        modules: boolean | string | Partial<{
+            compileType: 'module' | 'icss';
+            mode: CssModuleTypes | ((resourcePath: string) => CssModuleTypes),
+            auto: boolean | RegExp | ((resourcePath: string) => boolean),
+            exportGlobals: boolean,
+            localIdentName: string;
+            localIdentContext: string;
+            localIdentHashPrefix: string
+            namedExport: boolean,
+            exportLocalsConvention: 'camelCase' | 'asIs' | 'camelCaseOnly' | 'dashes' | 'dashesOnly',
+            exportOnlyLocals: boolean,
+
+        }>;
+        sourceMap: boolean;
+        importLoaders: number;
+        url: boolean | ((url: string, resourcePath: string) => boolean);
+    }>;
+    lessLoaderOptions?: Partial<{
+        lessOptions: { [K: string]: any } | ((loaderContext: any) => { [K: string]: any });
+        additionalData: string | ((content: any, loaderContext: any) => string);
+        sourceMap: boolean;
+        webpackImporter: boolean;
+        implementation: object | string;
+    }>;
+}
