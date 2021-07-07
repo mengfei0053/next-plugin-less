@@ -5,10 +5,10 @@ import { NextConfig } from 'next/dist/next-server/server/config';
  * @param nextConfig
  * @returns {boolean}
  */
-function isWebpack5 (nextConfig:NextConfig) {
+function isWebpack5 (nextConfig: NextConfig) {
   return (
     typeof nextConfig.webpack.version === 'string' &&
-      nextConfig.webpack.version.startsWith('5')
+    nextConfig.webpack.version.startsWith('5')
   );
 }
 

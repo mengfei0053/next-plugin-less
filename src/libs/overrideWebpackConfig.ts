@@ -1,8 +1,11 @@
-import clone from 'clone';
+import clone from 'lodash.clonedeep';
+import { Configuration, ModuleOptions, RuleSetRule, RuleSetUseItem } from 'webpack';
 import fs from 'fs';
 import path from 'path';
 import checkIsNextJs from './checkIsNextJs';
-import handleAntdInServer from './handleAntdInServer';
+import excludeLibsStyleInServer from './excludeLibsStyleInServer';
+import { NextConfig } from 'next/dist/next-server/server/config';
+import { WithLessOptions } from '../type';
 
 /**
  * overrideWebpackConfig
@@ -12,7 +15,11 @@ import handleAntdInServer from './handleAntdInServer';
  * @param pluginOptions
  * @returns {*}
  */
-export default function overrideWebpackConfig ({ webpackConfig, nextConfig, pluginOptions }:any) {
+export default function overrideWebpackConfig ({ webpackConfig, nextConfig, pluginOptions }: {
+  webpackConfig: Configuration;
+  nextConfig: NextConfig;
+  pluginOptions: WithLessOptions;
+}) {
   const isNextJs = checkIsNextJs(webpackConfig);
 
   if (isNextJs && !nextConfig.defaultLoaders) {
@@ -21,26 +28,30 @@ export default function overrideWebpackConfig ({ webpackConfig, nextConfig, plug
       'This plugin is not compatible with Next.js versions below 5.0.0 https://err.sh/next-plugins/upgrade'
     );
   }
+  if (!webpackConfig.module || !Array.isArray(webpackConfig.module.rules)) {
+    return webpackConfig;
+  }
 
   // eslint-disable-next-line no-underscore-dangle
   let __DEV__: boolean | undefined;
   if (isNextJs) __DEV__ = nextConfig.dev;
   else __DEV__ = webpackConfig.mode !== 'production';
 
-  const { rules } = webpackConfig.module;
+  const rules = (webpackConfig.module as ModuleOptions).rules as RuleSetRule[];
 
   // compatible w/ webpack 4 and 5
-  const ruleIndex = (rules as any).findIndex((rule:any) => Array.isArray(rule.oneOf));
+  const ruleIndex = rules.findIndex((rule) => Array.isArray(rule.oneOf));
   const rule = rules[ruleIndex];
+  const OneOfRules = rule.oneOf as RuleSetRule[];
 
   // default localIdentName
   let localIdentName = __DEV__ ? '[local]--[hash:4]' : '[hash:8]';
 
   if (
     pluginOptions &&
-      pluginOptions.cssLoaderOptions &&
-      pluginOptions.cssLoaderOptions.modules &&
-      pluginOptions.cssLoaderOptions.modules.localIdentName
+    pluginOptions.cssLoaderOptions &&
+    typeof pluginOptions.cssLoaderOptions.modules === 'object' &&
+    pluginOptions.cssLoaderOptions.modules.localIdentName
   ) {
     localIdentName = pluginOptions.cssLoaderOptions.modules.localIdentName;
   }
@@ -52,27 +63,29 @@ export default function overrideWebpackConfig ({ webpackConfig, nextConfig, plug
   //
   // delete default `getLocalIdent` and set `localIdentName`
   const cssModuleRegx = '/\\.module\\.css$/';
-  const cssModuleIndex = rule.oneOf.findIndex(
-    (item:any) => `${item.test}` === cssModuleRegx
+
+  const cssModuleIndex = OneOfRules.findIndex(
+    (item: any) => `${item.test}` === cssModuleRegx
   );
-  const cssModule = rule.oneOf[cssModuleIndex];
-  const cssLoaderInCssModule = cssModule.use.find((item:any) => `${item.loader}`.includes('css-loader'));
+  const cssModule = OneOfRules[cssModuleIndex];
+  const cssLoaderInCssModule = (cssModule.use as RuleSetUseItem[]).find((item: any) => `${item.loader}`.includes('css-loader'));
+  if (typeof cssLoaderInCssModule === 'object' && typeof cssLoaderInCssModule.options === 'object') {
+    if (pluginOptions.cssLoaderOptions) {
+      cssLoaderInCssModule.options = {
+        ...cssLoaderInCssModule.options,
+        ...pluginOptions.cssLoaderOptions
+      };
+    }
 
-  if (pluginOptions.cssLoaderOptions) {
-    cssLoaderInCssModule.options = {
-      ...cssLoaderInCssModule.options,
-      ...pluginOptions.cssLoaderOptions
-    };
-  }
-
-  if (
-    pluginOptions.cssLoaderOptions &&
-      pluginOptions.cssLoaderOptions.modules
-  ) {
-    cssLoaderInCssModule.options.modules = {
-      ...cssLoaderInCssModule.options.modules,
-      ...pluginOptions.cssLoaderOptions.modules
-    };
+    if (
+      pluginOptions.cssLoaderOptions &&
+      typeof pluginOptions.cssLoaderOptions.modules === 'object'
+    ) {
+      cssLoaderInCssModule.options.modules = {
+        ...cssLoaderInCssModule.options.modules,
+        ...pluginOptions.cssLoaderOptions.modules
+      };
+    }
   }
 
   //
@@ -82,23 +95,28 @@ export default function overrideWebpackConfig ({ webpackConfig, nextConfig, plug
   //
   // find
   const sassModuleRegx = '/\\.module\\.(scss|sass)$/';
-  const sassModuleIndex = rule.oneOf.findIndex(
-    (item:any) => `${item.test}` === sassModuleRegx
+  const sassModuleIndex = OneOfRules.findIndex(
+    (item: any) => `${item.test}` === sassModuleRegx
   );
-  const sassModule = rule.oneOf[sassModuleIndex];
+  const sassModule = OneOfRules[sassModuleIndex];
 
   // clone
   const lessModule = clone(sassModule);
+  if (!Array.isArray(lessModule.use)) {
+    return webpackConfig;
+  }
+
   lessModule.test = /\.less$/;
   delete lessModule.issuer;
 
   // overwrite
-  const lessModuleIndex = lessModule.use.findIndex((item:any) => `${item.loader}`.includes('sass-loader'));
+  const lessModuleIndex = lessModule.use.findIndex((item: any) => `${item.loader}`.includes('sass-loader'));
 
   // merge lessModule options
   const lessModuleOptions = {
     lessOptions: {
-      javascriptEnabled: true
+      javascriptEnabled: true,
+      modifyVars: {}
     },
     ...pluginOptions.lessLoaderOptions
   };
@@ -112,18 +130,18 @@ export default function overrideWebpackConfig ({ webpackConfig, nextConfig, plug
   // https://github.com/SolidZORO/next-plugin-antd-less/issues/39
   //
   // find
-  const fileModuleIndex = rule.oneOf.findIndex((item:any) => {
+  const fileModuleIndex = OneOfRules.findIndex((item: any) => {
     if (
       item.use &&
-        item.use.loader &&
-        item.use.loader.includes('/file-loader/')
+      item.use.loader &&
+      item.use.loader.includes('/file-loader/')
     ) {
       return item;
     }
     return null;
   });
 
-  const fileModule = rule.oneOf[fileModuleIndex];
+  const fileModule = OneOfRules[fileModuleIndex];
 
   if (fileModule) {
     // RAW ---> issuer: /\.(css|scss|sass)$/,
@@ -158,10 +176,10 @@ export default function overrideWebpackConfig ({ webpackConfig, nextConfig, plug
     |                         `@primary-color: #04f;`
     |
     */
-  if (pluginOptions.lessVarsFilePath) {
-    lessModuleOptions.additionalData = (content:any) => {
+  if (pluginOptions.lessVarsFilePath && typeof pluginOptions.lessVarsFilePath === 'string') {
+    lessModuleOptions.additionalData = (content: any) => {
       const lessVarsFileResolvePath = path.resolve(
-        pluginOptions.lessVarsFilePath
+        pluginOptions.lessVarsFilePath as string
       );
 
       if (fs.existsSync(lessVarsFileResolvePath)) {
@@ -196,74 +214,79 @@ export default function overrideWebpackConfig ({ webpackConfig, nextConfig, plug
   // ---- cssLoader In LessModule ----
 
   // find
-  const cssLoaderInLessModuleIndex = lessModule.use.findIndex((item:any) => `${item.loader}`.includes('css-loader'));
-  const cssLoaderInLessModule = lessModule.use.find((item:any) => `${item.loader}`.includes('css-loader'));
+  const cssLoaderInLessModuleIndex = lessModule.use.findIndex((item: any) => `${item.loader}`.includes('css-loader'));
+  const cssLoaderInLessModule = lessModule.use.find((item: any) => `${item.loader}`.includes('css-loader'));
 
   // clone
   const cssLoaderClone = clone(cssLoaderInLessModule);
-
-  if (
-    cssLoaderClone &&
-      cssLoaderClone.options &&
+  if (cssLoaderClone &&
+    typeof cssLoaderClone === 'object' &&
+    typeof cssLoaderClone.options === 'object') {
+    if (
+      cssLoaderClone &&
+      typeof cssLoaderClone === 'object' &&
+      typeof cssLoaderClone.options === 'object' &&
       cssLoaderClone.options.modules &&
       cssLoaderClone.options.modules.getLocalIdent
-  ) {
-    // make the custom `localIdentName` work
-    delete cssLoaderClone.options.modules.getLocalIdent;
-  }
-
-  // merge CssModule options
-  cssLoaderClone.options = {
-    ...cssLoaderClone.options,
-    sourceMap: Boolean(__DEV__),
-    ...pluginOptions.cssLoaderOptions,
-    //
-    modules: {
-      localIdentName,
-      // Inherited from Raw NextJs cssModule
-      ...cssLoaderClone.options.modules,
-      //
-      // if enable `local` mode, you can write this less
-      //
-      // ```styles.module.less
-      // .abc {      <---- is local, match class='abc--nx3xc2'
-      //   color: red;
-      //
-      //   :global {
-      //     .xyz {  <---- is global, match class='xyz'
-      //       color: blue;
-      //     }
-      //   }
-      // }
-      //
-      mode: 'local', // local, global, and pure, next.js default is `pure`
-      //
-      // Inherited from pluginOptions
-      ...(pluginOptions.cssLoaderOptions || {}).modules,
-      //
-      // recommended to keep `true`!
-      auto: true
+    ) {
+      // make the custom `localIdentName` work
+      delete cssLoaderClone.options.modules.getLocalIdent;
     }
-  };
+    const pluginCssModules = ((pluginOptions.cssLoaderOptions || {}).modules) || {};
 
-  // console.log('🟢  cssModuleOptions', '\n');
-  // console.dir(cssLoaderClone.options, { depth: null });
+    // merge CssModule options
+    cssLoaderClone.options = {
+      ...cssLoaderClone.options,
+      sourceMap: Boolean(__DEV__),
+      ...pluginOptions.cssLoaderOptions,
+      //
+      modules: {
+        localIdentName,
+        // Inherited from Raw NextJs cssModule
+        ...cssLoaderClone.options.modules,
+        //
+        // if enable `local` mode, you can write this less
+        //
+        // ```styles.module.less
+        // .abc {      <---- is local, match class='abc--nx3xc2'
+        //   color: red;
+        //
+        //   :global {
+        //     .xyz {  <---- is global, match class='xyz'
+        //       color: blue;
+        //     }
+        //   }
+        // }
+        //
+        mode: 'local', // local, global, and pure, next.js default is `pure`
+        //
+        // Inherited from pluginOptions
+        ...pluginCssModules,
+        //
+        // recommended to keep `true`!
+        auto: true
+      }
+    };
 
-  // overwrite
-  lessModule.use.splice(cssLoaderInLessModuleIndex, 1, cssLoaderClone);
+    // console.log('🟢  cssModuleOptions', '\n');
+    // console.dir(cssLoaderClone.options, { depth: null });
+
+    // overwrite
+    lessModule.use.splice(cssLoaderInLessModuleIndex, 1, cssLoaderClone);
+  }
 
   //
   //
   //
   // ---- append lessModule to webpack modules ----
-  rule.oneOf.splice(sassModuleIndex, 0, lessModule);
+  OneOfRules.splice(sassModuleIndex, 0, lessModule);
   webpackConfig.module.rules[ruleIndex] = rule;
 
   //
   //
-  // ---- handleAntdInServer (ONLY Next.js) ----
+  // ---- excludeLibsStyleInServer (ONLY Next.js) ----
   if (isNextJs) {
-    webpackConfig = handleAntdInServer(webpackConfig, nextConfig);
+    webpackConfig = excludeLibsStyleInServer(webpackConfig, nextConfig);
 
     if (typeof pluginOptions.webpack === 'function') {
       return pluginOptions.webpack(webpackConfig, nextConfig);

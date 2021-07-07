@@ -14,8 +14,13 @@ install:
   - yarn 
 
 deploy:
-  provider: script
-  skip_cleanup: true
-  script: yarn release
-  on:
-    branch: release
+  - provider: script
+    skip_cleanup: true
+    script: yarn release
+    on:
+      branch: release
+  - provider: script
+    skip_cleanup: true
+    script: yarn release
+    on:
+      branch: alpha

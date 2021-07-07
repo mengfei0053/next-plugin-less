@@ -1,7 +1,9 @@
+import { NextConfig } from 'next/dist/next-server/server/config';
 
 export type CssModuleTypes = 'local' | 'global' | 'pure';
 
-export interface WithLessOptions {
+export interface WithLessOptions extends Partial<NextConfig> {
+    libsStyleRegExp?: RegExp;
     /**
      * { '@primary-color': '#04f' }
      */
@@ -13,7 +15,7 @@ export interface WithLessOptions {
     cssLoaderOptions?: Partial<{
         esModule: boolean;
         import: boolean | ((url: string, media: string, resourcePath: string) => boolean);
-        modules: boolean | string | Partial<{
+        modules: Partial<{
             compileType: 'module' | 'icss';
             mode: CssModuleTypes | ((resourcePath: string) => CssModuleTypes),
             auto: boolean | RegExp | ((resourcePath: string) => boolean),
@@ -31,7 +33,7 @@ export interface WithLessOptions {
         url: boolean | ((url: string, resourcePath: string) => boolean);
     }>;
     lessLoaderOptions?: Partial<{
-        lessOptions: { [K: string]: any } | ((loaderContext: any) => { [K: string]: any });
+        lessOptions: { [K: string]: any };
         additionalData: string | ((content: any, loaderContext: any) => string);
         sourceMap: boolean;
         webpackImporter: boolean;
