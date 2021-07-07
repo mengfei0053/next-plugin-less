@@ -1,3 +1,10 @@
+## [1.0.1-alpha.1](https://github.com/mengfei0053/next-plugin-less/compare/v1.0.0...v1.0.1-alpha.1) (2021-07-07)
+
+
+### Bug Fixes
+
+* **overrideWebpackConfig:** fix pass in libsStyleRegExp ([18e1064](https://github.com/mengfei0053/next-plugin-less/commit/18e1064365dee9a3229b377c8767ce961935d453))
+
 # 1.0.0 (2021-07-07)
 
 
