@@ -1,6 +1,6 @@
 {
   "name": "next-plugin-less",
-  "version": "0.0.0-development",
+  "version": "1.0.0-alpha.2",
   "main": "dist/index.js",
   "sideEffect": false,
   "author": "mengfei0053@live.com",
