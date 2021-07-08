@@ -1,0 +1,10 @@
+pull_request_rules:
+  - name: Automatic merge ⬇️ on approval ✔
+    conditions:
+      - or:
+        - "base=alpha"
+        - "base=beta"
+        - "base=release"
+    actions:
+      merge:
+        method: merge
