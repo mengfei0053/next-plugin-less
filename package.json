@@ -32,7 +32,6 @@
     "build": "yarn tsc",
     "lint": "eslint --fix --ext .js,.ts src",
     "release": "semantic-release",
-    "postrelease": "node ./scripts/postinstall.js",
     "prerelease": "yarn build",
     "prepare": "husky install"
   },

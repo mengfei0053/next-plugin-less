@@ -24,3 +24,6 @@ deploy:
     script: yarn release
     on:
       branch: alpha
+
+after_deploy:
+  - node ./scripts/postinstall.js
