@@ -91,7 +91,6 @@ module.exports = {
     { name: 'beta', prerelease: true },
     { name: 'alpha', prerelease: true },
   ],
-  ci: false,
   plugins: [
     [
       '@semantic-release/commit-analyzer',
