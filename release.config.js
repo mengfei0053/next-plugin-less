@@ -103,6 +103,7 @@ module.exports = {
           { type: 'perf', release: 'patch' },
           { type: 'refactor', release: 'patch' },
           { type: 'style', release: 'patch' },
+          { type: 'docs', release: 'patch' },
         ]
       }
     ],
