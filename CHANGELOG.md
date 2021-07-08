@@ -1,3 +1,15 @@
+## [1.0.1-alpha.2](https://github.com/mengfei0053/next-plugin-less/compare/v1.0.1-alpha.1...v1.0.1-alpha.2) (2021-07-08)
+
+
+### Continuous Integration
+
+* **release.config.js:** remove ci='false' ([facd45a](https://github.com/mengfei0053/next-plugin-less/commit/facd45a0dde5ad5fc65c331ece061b588055f869))
+
+
+### Performance Improvements
+
+* **overrideWebpackConfig:** plusinOptions.modules will overwrite default modules.auto ([8996969](https://github.com/mengfei0053/next-plugin-less/commit/8996969674b9af04ad7940825675fa7e38041078))
+
 ## [1.0.1-alpha.1](https://github.com/mengfei0053/next-plugin-less/compare/v1.0.0...v1.0.1-alpha.1) (2021-07-07)
 
 
