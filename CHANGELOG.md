@@ -1,3 +1,33 @@
+## [1.0.1](https://github.com/mengfei0053/next-plugin-less/compare/v1.0.0...v1.0.1) (2021-07-08)
+
+
+### Continuous Integration
+
+* **package.json,scripts/*:** auto git push after release ([b5e1afa](https://github.com/mengfei0053/next-plugin-less/commit/b5e1afa3d910d2a4ea38ab29e67df9201337ea91))
+* **project:** fix github auto push ([01e86a5](https://github.com/mengfei0053/next-plugin-less/commit/01e86a5f9659b7032037b0c6886da6cf7eaa4067))
+* **release.config.js:** remove ci='false' ([facd45a](https://github.com/mengfei0053/next-plugin-less/commit/facd45a0dde5ad5fc65c331ece061b588055f869))
+* **release.config.js:** update releaseRules ([98d465e](https://github.com/mengfei0053/next-plugin-less/commit/98d465e89096bc67377628db0c5b009a46cbda38))
+
+
+* Merge branch 'alpha' of https://github.com/mengfei0053/next-plugin-less into alpha ([f16616a](https://github.com/mengfei0053/next-plugin-less/commit/f16616a1b4059d5b845704565e77668ed53945d5))
+
+
+### Bug Fixes
+
+* **overrideWebpackConfig:** fix pass in libsStyleRegExp ([18e1064](https://github.com/mengfei0053/next-plugin-less/commit/18e1064365dee9a3229b377c8767ce961935d453))
+
+
+### Other Changes
+
+* **.mergify.yml:** add mergify.yml ([6c2d459](https://github.com/mengfei0053/next-plugin-less/commit/6c2d459e4ba0457dfa5f3293aa8d4e4d0dbb0027))
+* **release:** 1.0.1-alpha.1 [skip ci] ([5f9ea75](https://github.com/mengfei0053/next-plugin-less/commit/5f9ea75367a955a4cb6721214de450c163da1456))
+* **release:** 1.0.1-alpha.2 [skip ci] ([a84fb52](https://github.com/mengfei0053/next-plugin-less/commit/a84fb52c121b8c1f5389e522073d87ff7fdf78e0))
+
+
+### Performance Improvements
+
+* **overrideWebpackConfig:** plusinOptions.modules will overwrite default modules.auto ([8996969](https://github.com/mengfei0053/next-plugin-less/commit/8996969674b9af04ad7940825675fa7e38041078))
+
 ## [1.0.1-alpha.2](https://github.com/mengfei0053/next-plugin-less/compare/v1.0.1-alpha.1...v1.0.1-alpha.2) (2021-07-08)
 
 
