@@ -1,3 +1,13 @@
+## [1.0.2](https://github.com/mengfei0053/next-plugin-less/compare/v1.0.1...v1.0.2) (2021-07-08)
+
+
+* Merge branch 'release' of https://github.com/mengfei0053/next-plugin-less into release ([05b6250](https://github.com/mengfei0053/next-plugin-less/commit/05b62503e3aab03a452df0e12088e47308327052))
+
+
+### Documentation
+
+* **readme.md:** update readme.md ([235e1c1](https://github.com/mengfei0053/next-plugin-less/commit/235e1c1a8685a29a827b97a9c168d9d264600eb6))
+
 ## [1.0.1](https://github.com/mengfei0053/next-plugin-less/compare/v1.0.0...v1.0.1) (2021-07-08)
 
 
