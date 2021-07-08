@@ -261,10 +261,8 @@ export default function overrideWebpackConfig ({ webpackConfig, nextConfig, plug
         mode: 'local', // local, global, and pure, next.js default is `pure`
         //
         // Inherited from pluginOptions
-        ...pluginCssModules,
-        //
-        // recommended to keep `true`!
-        auto: true
+        auto: true,
+        ...pluginCssModules
       }
     };
 
